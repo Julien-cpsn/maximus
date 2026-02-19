@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = [
+    "packages/maximus-ui",
+    "packages/maximus-api"
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace.dependencies]
+
+# workspace
+maximus-ui = { path = "packages/maximus-ui" }
+maximus-api = { path = "packages/maximus-api" }
+
+dioxus = { version = "0.7.3" }
+
+anyhow = "1.0.101"
+directories = "6.0.0"

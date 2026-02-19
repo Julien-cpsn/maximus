@@ -1,0 +1,30 @@
+[package]
+name = "maximus-api"
+version = "0.1.0"
+authors = ["Julien-cpsn <julien.caposiena@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+
+dioxus = { workspace = true, features = ["fullstack"] }
+anyhow = { workspace = true }
+directories = { workspace = true }
+
+serde = "1.0.228"
+serde_json = "1.0.149"
+
+once_cell = { version = "1.21.3", features = ["parking_lot"] }
+dotenv = "0.15.0"
+parking_lot = { version = "0.12.5", features = ["send_guard", "arc_lock"]}
+base64 = "0.22.1"
+rand = { version = "0.10.0", features = ["thread_rng"] }
+getrandom = { version = "0.4.1", features = ["wasm_js"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+matrix-sdk = { version = "0.16.0", default-features = false, features = ["native-tls", "js", "anyhow"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+matrix-sdk = { version = "0.16.0", default-features = false, features = ["native-tls", "sqlite", "anyhow"] }
+
+[features]
+server = ["dioxus/server"]

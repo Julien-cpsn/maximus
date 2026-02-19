@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd packages/maximus-ui
+npx @tailwindcss/cli -i ./input.css -o ./assets/tailwind.css --watch &
+TAILWIND_PID=$!
+RUST_LOG=max,matrix_sdk=error dx serve --web
+kill $TAILWIND_PID
