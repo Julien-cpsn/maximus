@@ -2,11 +2,12 @@ use std::time::Duration;
 use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
 use maximus_api::user::credentials::UserCredentials;
-use maximus_api::user::login::login;
+use maximus_api::user::login::{is_logged, login};
 use crate::components::button::Button;
 use crate::components::input::Input;
 use crate::components::label::Label;
 use crate::components::toast::ToastProvider;
+use crate::custom_components::utils::spinner::spinner::{Spinner, SpinnerSize};
 use crate::Route;
 
 #[component]
@@ -103,7 +104,17 @@ fn LoginButton(
     let nav = navigator();
     let toast_api = use_toast();
 
+    let is_logged = use_server_future(move || async move { is_logged().await.unwrap() })?;
+
+    if is_logged.value().unwrap() == true {
+        nav.push(Route::Home);
+    }
+
+    let mut loading = use_signal(|| false);
+
     let login = move |_| async move {
+        loading.set(true);
+
         let credentials = UserCredentials {
             homeserver_url: homeserver_url.read().clone(),
             username: username.read().clone(),
@@ -112,9 +123,11 @@ fn LoginButton(
 
         match login(credentials).await {
             Ok(_) => {
+                loading.set(false);
                 nav.push(Route::Home);
             },
             Err(error) => {
+                loading.set(false);
                 if let ServerFnError::ServerError { message, ..} = error {
                     toast_api.error(
                         String::from("Error"),
@@ -132,7 +145,15 @@ fn LoginButton(
         Button {
             attributes: attributes,
             onclick: login,
-            "Connect"
+            if &*loading.read() == &false {
+                "Connect"
+            }
+            else {
+                Spinner {
+                    size: SpinnerSize::Medium,
+                    color: "black"
+                }
+            }
         },
     }
 }
