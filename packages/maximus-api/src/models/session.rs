@@ -18,10 +18,10 @@ pub struct FullSession {
     pub sync_token: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct UserSession {
     pub display_name: String,
-    pub avatar: Option<MatrixAvatar>,
+    pub avatar: Option<String>,
     pub matrix_session: MatrixSession
 }
 

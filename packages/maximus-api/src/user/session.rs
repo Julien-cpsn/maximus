@@ -1,14 +1,16 @@
 use std::fs;
+use base64::engine::{general_purpose, Engine as _};
 use dioxus::prelude::*;
 use matrix_sdk::authentication::matrix::MatrixSession;
 use matrix_sdk::{AuthSession, Client, LoopCtrl};
 use matrix_sdk::config::SyncSettings;
+use matrix_sdk::media::MediaFormat;
 use matrix_sdk::ruma::api::client::filter::FilterDefinition;
 use rand::distr::Alphanumeric;
 use rand::{rng, RngExt};
-use crate::{DATABASE_DIR, DATA_DIR, SESSION_FILE_PATH};
-use crate::models::session::{ClientSession, FullSession, MatrixAvatar, UserSession};
-use crate::user::profile::fetch_profile;
+use crate::{DATABASE_DIR, SESSION_FILE_PATH};
+use crate::models::session::{ClientSession, FullSession, UserSession};
+use crate::user::profile::fetch_display_name;
 use crate::user::login::get_client;
 
 
@@ -75,19 +77,12 @@ pub async fn get_user_session() -> Result<UserSession> {
 
     debug!("access token: {}", matrix_session.tokens.access_token);
 
-    let (display_name, user_avatar) = fetch_profile(&client, matrix_session.meta.user_id.to_owned()).await?;
-    let mut avatar = None;
-
-    if let Some((server_name, media_id)) = user_avatar {
-        avatar = Some(MatrixAvatar {
-            server_name: server_name.to_string(),
-            media_id,
-        });
-    }
+    let display_name = fetch_display_name(&client, matrix_session.meta.user_id.to_owned()).await?;
+    let avatar = client.account().get_avatar(MediaFormat::File).await?;
 
     Ok(UserSession {
         display_name,
-        avatar,
+        avatar: avatar.map(|data| general_purpose::STANDARD.encode(&data)),
         matrix_session,
     })
 }

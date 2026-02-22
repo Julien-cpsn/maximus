@@ -6,3 +6,6 @@ pub mod avatar;
 pub mod dialog;
 pub mod toast;
 pub mod tooltip;
+pub mod sidebar;
+pub mod separator;
+pub mod sheet;

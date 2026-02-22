@@ -5,6 +5,7 @@ use once_cell::sync::Lazy;
 
 pub mod user;
 pub mod models;
+pub mod rooms;
 
 pub static PROJECT_DIRS: Lazy<ProjectDirs> = Lazy::new(|| ProjectDirs::from("com", "julien-cpsn", "maximus").expect("No valid home directory path could be retrieved from the operating system"));
 

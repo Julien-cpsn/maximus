@@ -67,9 +67,10 @@
 }
 
 /* State-specific styles */
+/*
 .avatar[data-state="loading"] {
     animation: pulse 1.5s infinite ease-in-out;
-}
+}*/
 
 .avatar[data-state="empty"] {
     background: var(--primary-color-7);

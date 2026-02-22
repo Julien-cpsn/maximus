@@ -4,14 +4,13 @@ use std::str::FromStr;
 use base64::engine::{general_purpose, Engine as _};
 use crate::AVATAR_DIR;
 use matrix_sdk::ruma::api::client::authenticated_media::get_content_thumbnail;
-use matrix_sdk::{Client, OwnedServerName};
+use matrix_sdk::{OwnedServerName};
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::path::PathBuf;
-use dioxus::fullstack::body::Bytes;
 use matrix_sdk::ruma::UInt;
 use crate::user::login::get_client;
 
+#[allow(unused)]
 #[server]
 pub async fn fetch_user_avatar(server_name: String, media_id: String) -> anyhow::Result<String> {
     let avatar_path = AVATAR_DIR.join(format!("{media_id}.jpg"));
@@ -32,7 +31,7 @@ pub async fn fetch_user_avatar(server_name: String, media_id: String) -> anyhow:
         avatar_file.write_all(&response.file)?;
     }
 
-    let data = fs::read(&avatar_path).unwrap();
+    let data = fs::read(&avatar_path)?;
 
     Ok(general_purpose::STANDARD.encode(&data))
 }

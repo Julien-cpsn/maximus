@@ -1,12 +1,9 @@
 use std::fs;
-use anyhow::anyhow;
-use dioxus::html::completions::CompleteWithBraces::tr;
 use dioxus::prelude::*;
-use matrix_sdk::authentication::matrix::MatrixSession;
-use matrix_sdk::{AuthSession, Client};
+use matrix_sdk::{Client};
 use once_cell::unsync::Lazy;
 use parking_lot::{Mutex};
-use crate::{DATABASE_DIR, DATA_DIR, SESSION_FILE_PATH};
+use crate::{DATABASE_DIR, SESSION_FILE_PATH};
 use crate::models::session::FullSession;
 use crate::user::credentials::UserCredentials;
 use crate::user::session::{build_client, get_session, save_full_session, sync};
@@ -91,7 +88,7 @@ async fn try_restore_session() -> anyhow::Result<bool> {
 }
 
 async fn restore_session() -> anyhow::Result<(Client, Option<String>)> {
-    println!("Previous session found");
+    info!("Previous session found");
 
     let serialized_session: String = fs::read_to_string(SESSION_FILE_PATH.as_path())?;
     let full_session: FullSession = serde_json::from_str(&serialized_session)?;
@@ -105,7 +102,7 @@ async fn restore_session() -> anyhow::Result<(Client, Option<String>)> {
 
     let client = client_builder.build().await?;
 
-    println!("Restoring session for \"{}\"", full_session.matrix_session.meta.user_id);
+    info!("Restoring session for \"{}\"", full_session.matrix_session.meta.user_id);
 
     client.restore_session(full_session.matrix_session).await.expect("Session already restored or logged in");
 
@@ -148,5 +145,5 @@ pub async fn logout() -> Result<()> {
         }
     }
 
-    return Ok(())
+    Ok(())
 }
