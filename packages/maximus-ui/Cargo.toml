@@ -8,12 +8,11 @@ edition = "2021"
 
 # Workspace
 maximus-api = { workspace = true }
-anyhow = { workspace = true }
+maximus-shared-models = { workspace = true }
 
 dioxus = { workspace = true, features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1", default-features = false }
-
-reqwest = "0.13.2"
+dioxus-sdk-time = "0.7.0"
 
 [features]
 default = []

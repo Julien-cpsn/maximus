@@ -4,9 +4,10 @@ An experimental **Ma**tri**x** cl**i**ent **m**ade with Diox**us**
 
 ## Develop
 
-1. Edit code
-2. Run `./dev`
-3. Go to https://localhost:8080
+1. Run `npm install` in `packages/maximus-ui`
+2. Edit code
+3. Run `./dev`
+4. Go to https://localhost:8080
 
 ## License
 

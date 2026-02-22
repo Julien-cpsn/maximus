@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_primitives::ContentSide;
-use crate::components::button::{Button, ButtonVariant};
-use crate::components::tooltip::{Tooltip, TooltipContent, TooltipTrigger};
+use crate::dioxus_components::button::{Button, ButtonVariant};
+use crate::dioxus_components::tooltip::{Tooltip, TooltipContent, TooltipTrigger};
 
 #[component]
 pub fn CopyButton(text_to_copy: String) -> Element {

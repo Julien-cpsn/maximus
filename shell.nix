@@ -16,7 +16,7 @@ pkgs.mkShell rec {
     rustc
     rustfmt
     cargo
-   
+
     sqlite
   ];
 

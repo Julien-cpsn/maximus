@@ -1,31 +1,35 @@
 use std::fs;
-use anyhow::anyhow;
-use dioxus::html::completions::CompleteWithBraces::tr;
 use dioxus::prelude::*;
-use matrix_sdk::authentication::matrix::MatrixSession;
-use matrix_sdk::{AuthSession, Client};
-use once_cell::unsync::Lazy;
+use matrix_sdk::{Client};
+use once_cell::sync::Lazy;
 use parking_lot::{Mutex};
-use crate::{DATABASE_DIR, DATA_DIR, SESSION_FILE_PATH};
+use crate::consts::{DATABASE_DIR, SESSION_FILE_PATH};
 use crate::models::session::FullSession;
 use crate::user::credentials::UserCredentials;
 use crate::user::session::{build_client, get_session, save_full_session, sync};
 
-thread_local! {
-    pub static MATRIX_CLIENT: Lazy<Mutex<Option<Client>>> = Lazy::new(|| Mutex::new(None));
+#[cfg(feature = "server")]
+pub static MATRIX_CLIENT: Lazy<Mutex<Option<Client>>> = Lazy::new(|| Mutex::new(None));
+
+#[cfg(feature = "server")]
+pub fn get_client() -> Result<Client, ServerFnError> {
+    match MATRIX_CLIENT.lock().as_ref() {
+        Some(client) => Ok(client.clone()),
+        None => Err(ServerFnError::ServerError {
+            message: String::from("NOT LOGGED IN"),
+            code: 401,
+            details: None,
+        })
+    }
 }
 
+#[cfg(not(feature = "server"))]
 pub fn get_client() -> Result<Client, ServerFnError> {
-    MATRIX_CLIENT.with(|client|
-        match &*client.lock() {
-            Some(client) => Ok(client.clone()),
-            None => Err(ServerFnError::ServerError {
-                message: String::from("NOT LOGGED IN"),
-                code: 401,
-                details: None,
-            })
-        }
-    )
+    Err(ServerFnError::ServerError {
+        message: String::from("WASM"),
+        code: 500,
+        details: None,
+    })
 }
 
 #[server]
@@ -40,10 +44,8 @@ pub async fn login(credentials: UserCredentials) -> Result<(), ServerFnError> {
 
     sync(&client, sync_token).await?;
 
-    MATRIX_CLIENT.with(|new_client| {
-        *new_client.lock() = Some(client);
-    });
-
+    *MATRIX_CLIENT.lock() = Some(client);
+    
     Ok(())
 }
 
@@ -52,7 +54,8 @@ async fn new_session(credentials: &UserCredentials) -> Result<Client, ServerFnEr
 
     let (client, passphrase) = build_client(&credentials.homeserver_url).await?;
 
-    if let Err(error) = client.matrix_auth()
+    if let Err(error) = client
+        .matrix_auth()
         .login_username(&credentials.username, &credentials.password)
         .initial_device_display_name("Maximus client")
         .await
@@ -79,9 +82,10 @@ async fn try_restore_session() -> anyhow::Result<bool> {
 
         sync(&client, sync_token).await?;
 
-        MATRIX_CLIENT.with(|new_client| {
-            *new_client.lock() = Some(client);
-        });
+        #[cfg(feature = "server")]
+        {
+            *MATRIX_CLIENT.lock() = Some(client);
+        }
 
         Ok(true)
     }
@@ -91,38 +95,38 @@ async fn try_restore_session() -> anyhow::Result<bool> {
 }
 
 async fn restore_session() -> anyhow::Result<(Client, Option<String>)> {
-    println!("Previous session found");
+    info!("Previous session found");
 
     let serialized_session: String = fs::read_to_string(SESSION_FILE_PATH.as_path())?;
     let full_session: FullSession = serde_json::from_str(&serialized_session)?;
 
     let mut client_builder = Client::builder().homeserver_url(&full_session.client_session.homeserver_url);
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "server")]
     {
         client_builder = client_builder.sqlite_store(full_session.client_session.db_path, Some(&full_session.client_session.passphrase));
     }
 
     let client = client_builder.build().await?;
 
-    println!("Restoring session for \"{}\"", full_session.matrix_session.meta.user_id);
+    info!("Restoring session for \"{}\"", full_session.matrix_session.meta.user_id);
 
     client.restore_session(full_session.matrix_session).await.expect("Session already restored or logged in");
 
     Ok((client, full_session.sync_token))
 }
 
-#[server]
 pub async fn is_logged() -> Result<bool> {
     let mut is_already_logged = false;
 
-    MATRIX_CLIENT.with(|cell| {
-        if let Some(client) = cell.lock().as_ref() {
+    #[cfg(feature = "server")]
+    {
+        if let Some(client) = MATRIX_CLIENT.lock().as_ref() {
             if client.session().is_some() {
                 is_already_logged = true
             }
         }
-    });
+    }
 
     if is_already_logged {
         Ok(true)
@@ -134,7 +138,7 @@ pub async fn is_logged() -> Result<bool> {
 
 #[server]
 pub async fn logout() -> Result<()> {
-    let client = MATRIX_CLIENT.with(|cell| cell.lock().take());
+    let client = MATRIX_CLIENT.lock().take();
 
     if let Some(client) = client {
         let _ = client.logout().await;
@@ -148,5 +152,5 @@ pub async fn logout() -> Result<()> {
         }
     }
 
-    return Ok(())
+    Ok(())
 }

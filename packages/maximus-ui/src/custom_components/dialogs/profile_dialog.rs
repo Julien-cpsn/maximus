@@ -1,18 +1,19 @@
 use dioxus::prelude::*;
 use maximus_api::models::session::UserSession;
-use crate::components::avatar::AvatarImageSize;
-use crate::components::button::{Button, ButtonVariant};
-use crate::components::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
+use crate::dioxus_components::avatar::AvatarImageSize;
+use crate::dioxus_components::button::{Button, ButtonVariant};
+use crate::dioxus_components::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
 use crate::custom_components::copy_button::CopyButton;
 use crate::custom_components::user_avatar::UserAvatar;
 
 #[component]
-pub fn ProfileDialog(open_profile: Signal<bool>, user_session: Signal<UserSession>) -> Element {
+pub fn ProfileDialog(open_profile: Signal<bool>, user_session: ReadSignal<UserSession>) -> Element {
     let user_session_read = user_session.read();
     let display_name = user_session_read.display_name.as_str();
     let user_id = user_session_read.matrix_session.meta.user_id.as_str();
     let device_id = user_session_read.matrix_session.meta.device_id.as_str();
     let access_token = user_session_read.matrix_session.tokens.access_token.as_str();
+    let avatar = user_session_read.avatar.clone();
 
     rsx! {
         DialogRoot {
@@ -30,7 +31,7 @@ pub fn ProfileDialog(open_profile: Signal<bool>, user_session: Signal<UserSessio
                             b { "Avatar" },
                             UserAvatar {
                                 size: AvatarImageSize::ExtraLarge,
-                                avatar: user_session_read.avatar.clone(),
+                                avatar_data: avatar,
                             }
                         },
                         div {

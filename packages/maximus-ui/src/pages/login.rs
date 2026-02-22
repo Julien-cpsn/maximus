@@ -1,12 +1,12 @@
 use std::time::Duration;
 use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
-use maximus_api::user::credentials::UserCredentials;
+use maximus_api::user::credentials::{prefetch_credentials, UserCredentials};
 use maximus_api::user::login::{is_logged, login};
-use crate::components::button::Button;
-use crate::components::input::Input;
-use crate::components::label::Label;
-use crate::components::toast::ToastProvider;
+use crate::dioxus_components::button::Button;
+use crate::dioxus_components::input::Input;
+use crate::dioxus_components::label::Label;
+use crate::dioxus_components::toast::ToastProvider;
 use crate::custom_components::utils::spinner::spinner::{Spinner, SpinnerSize};
 use crate::Route;
 
@@ -17,11 +17,11 @@ pub fn Login() -> Element {
     let mut password = use_signal(String::new);
 
     use_resource(move || async move {
-        let credentials = maximus_api::user::credentials::prefetch_credentials().await.unwrap();
+        let credentials = prefetch_credentials().await.unwrap();
 
-        homeserver_url.set(credentials.homeserver_url.clone());
-        username.set(credentials.username.clone());
-        password.set(credentials.password.clone());
+        homeserver_url.set(credentials.homeserver_url);
+        username.set(credentials.username);
+        password.set(credentials.password);
     });
 
     rsx! {
@@ -154,6 +154,6 @@ fn LoginButton(
                     color: "black"
                 }
             }
-        },
+        }
     }
 }

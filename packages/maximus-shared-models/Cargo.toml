@@ -1,0 +1,12 @@
+[package]
+name = "maximus-shared-models"
+version = "0.1.0"
+authors = ["Julien-cpsn <julien.caposiena@gmail.com>"]
+edition = "2024"
+
+[dependencies]
+
+matrix-sdk = { workspace = true }
+
+serde = { workspace = true }
+strum = { version = "0.28.0", features = ["derive"] }

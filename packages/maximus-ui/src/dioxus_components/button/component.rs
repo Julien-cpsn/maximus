@@ -25,9 +25,27 @@ impl ButtonVariant {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Default)]
+#[non_exhaustive]
+pub enum ButtonRadius {
+    #[default]
+    Rounded,
+    Circle
+}
+
+impl ButtonRadius {
+    pub fn class(&self) -> &'static str {
+        match self {
+            ButtonRadius::Rounded => "rounded",
+            ButtonRadius::Circle => "circle",
+        }
+    }
+}
+
 #[component]
 pub fn Button(
     #[props(default)] variant: ButtonVariant,
+    #[props(default)] radius: ButtonRadius,
     #[props(extends=GlobalAttributes)]
     #[props(extends=button)]
     attributes: Vec<Attribute>,
@@ -39,6 +57,7 @@ pub fn Button(
     let base = attributes!(button {
         class: "button",
         "data-style": variant.class(),
+        "radius": radius.class(),
     });
     let merged = merge_attributes(vec![base, attributes]);
 

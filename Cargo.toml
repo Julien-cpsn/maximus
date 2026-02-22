@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "packages/maximus-ui",
-    "packages/maximus-api"
+    "packages/maximus-api",
+    "packages/maximus-shared-models"
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -12,8 +13,8 @@ members = [
 # workspace
 maximus-ui = { path = "packages/maximus-ui" }
 maximus-api = { path = "packages/maximus-api" }
+maximus-shared-models = { path = "packages/maximus-shared-models" }
 
 dioxus = { version = "0.7.3" }
-
-anyhow = "1.0.101"
-directories = "6.0.0"
+matrix-sdk = { version = "0.16.0", default-features = false, features = ["native-tls", "anyhow"] }
+serde = { version = "1.0.228", features = ["derive"] }
